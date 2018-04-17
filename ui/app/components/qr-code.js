@@ -3,7 +3,7 @@ const h = require('react-hyperscript')
 const qrCode = require('qrcode-npm').qrcode
 const inherits = require('util').inherits
 const connect = require('react-redux').connect
-const isHexPrefixed = require('ethereumjs-util').isHexPrefixed
+const { isHexPrefixed, toChecksumAddress } = require('ethereumjs-util')
 const ReadOnlyInput = require('./readonly-input')
 
 module.exports = connect(mapStateToProps)(QrCodeView)
@@ -24,16 +24,16 @@ function QrCodeView () {
 
 QrCodeView.prototype.render = function () {
   const props = this.props
-  const Qr = props.Qr
-  const address = `${isHexPrefixed(Qr.data) ? 'ethereum:' : ''}${Qr.data}`
+  const { message, data } = props.Qr
+  const address = `${isHexPrefixed(data) ? 'ethereum:' : ''}${data}`
   const qrImage = qrCode(4, 'M')
   qrImage.addData(address)
   qrImage.make()
 
   return h('.div.flex-column.flex-center', [
-    Array.isArray(Qr.message)
+    Array.isArray(message)
       ? h('.message-container', this.renderMultiMessage())
-      : Qr.message && h('.qr-header', Qr.message),
+      : message && h('.qr-header', message),
 
     this.props.warning ? this.props.warning && h('span.error.flex-center', {
       style: {
@@ -50,7 +50,7 @@ QrCodeView.prototype.render = function () {
     h(ReadOnlyInput, {
       wrapperClass: 'ellip-address-wrapper',
       inputClass: 'qr-ellip-address',
-      value: Qr.data,
+      value: toChecksumAddress(data),
     }),
   ])
 }

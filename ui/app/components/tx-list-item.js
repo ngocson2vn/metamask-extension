@@ -9,6 +9,7 @@ const abiDecoder = require('abi-decoder')
 abiDecoder.addABI(abi)
 const Identicon = require('./identicon')
 const contractMap = require('eth-contract-metadata')
+const { toChecksumAddress } = require('ethereumjs-util')
 
 const actions = require('../actions')
 const { conversionUtil, multiplyCurrencies } = require('../conversion-util')
@@ -74,10 +75,12 @@ TxListItem.prototype.getAddressText = function () {
   const decodedData = txParams.data && abiDecoder.decodeMethod(txParams.data)
   const { name: txDataName, params = [] } = decodedData || {}
   const { value } = params[0] || {}
+  const checksumAddress = toChecksumAddress(address)
+  const checksumValue = toChecksumAddress(value)
 
   let addressText
   if (txDataName === 'transfer' || address) {
-    const addressToRender = txDataName === 'transfer' ? value : address
+    const addressToRender = txDataName === 'transfer' ? checksumValue : checksumAddress
     addressText = `${addressToRender.slice(0, 10)}...${addressToRender.slice(-4)}`
   } else if (isMsg) {
     addressText = this.context.t('sigRequest')
